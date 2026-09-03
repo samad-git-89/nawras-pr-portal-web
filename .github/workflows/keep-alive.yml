@@ -1,0 +1,20 @@
+name: Keep Supabase project awake
+
+on:
+  schedule:
+    # Runs every 3 days at 06:00 UTC — safely under Supabase's 7-day
+    # inactivity window. GitHub Actions cron doesn't support "every 6
+    # days", so 3 gives a comfortable safety margin.
+    - cron: "0 6 */3 * *"
+  workflow_dispatch: # lets you trigger it manually from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase auth health endpoint
+        run: |
+          curl -sf "${{ secrets.SUPABASE_URL }}/auth/v1/health" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            && echo "Supabase project pinged successfully" \
+            || (echo "Ping failed" && exit 1)
